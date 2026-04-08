@@ -46,7 +46,7 @@
       <div class="hero-affiliations">
         <span><sup>1</sup>School of AI & Automation, HUST</span>
         <span><sup>2</sup>College of Design & Innovation, Tongji University</span>
-        <span><sup>3</sup>School of Software Engineering, HUST</span>
+        <span><sup>3</sup>School of Software and Engineering, HUST</span>
         <span><sup>4</sup>Shanghai Institute for Intelligent Autonomous Systems, Tongji</span>
         <span class="corresponding"><sup>†</sup>Corresponding author</span>
       </div>
@@ -59,15 +59,14 @@
       </p>
 
       <!-- Dashboard stats from Table 1 -->
-      <div class="hero-stats">
+      <div class="hero-stats" style="flex-wrap:nowrap; justify-content:center;">
         <div class="stat-card"><div class="stat-value">15</div><div class="stat-label">Object Types</div></div>
         <div class="stat-card"><div class="stat-value">98</div><div class="stat-label">Scenes</div></div>
         <div class="stat-card"><div class="stat-value">161K</div><div class="stat-label">RGB-D Frames</div></div>
         <div class="stat-card"><div class="stat-value">1.03<span class="stat-unit">M</span></div><div class="stat-label">Annotations</div></div>
         <div class="stat-card"><div class="stat-value">11</div><div class="stat-label">Arrangements</div></div>
         <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Backgrounds</div></div>
-        <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">Lighting Settings</div></div>
-        <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Viewpoints/Scene</div></div>
+        <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">Lighting</div></div>
       </div>
 
       <!-- Action buttons -->
@@ -87,6 +86,12 @@
         <span class="section-tag">§ 3.1</span>
         <h2 class="section-title">Objects & Capture Setup</h2>
         <p class="section-desc">15 laboratory objects organized into five functional groups that frequently appear in biomedical manipulation workflows.</p>
+      </div>
+
+      <!-- Teaser Figure -->
+      <div class="glass-card fig-full" style="margin-bottom:40px;">
+        <img src="figures/teaser.png" alt="TransBiolab overview teaser" loading="lazy" style="width:100%; border-radius:12px; padding:16px;">
+        <figcaption style="padding:0 28px 20px; color:var(--text-muted); font-size:13px; font-style:italic;">An overview of the proposed TransBiolab dataset, featuring multi-object and multi-view characteristics. Frames denoted by red rectangles indicate higher levels of clutter and occlusion.</figcaption>
       </div>
 
       <div class="content-with-figure">
@@ -188,18 +193,6 @@
         </figure>
       </div>
 
-      <!-- Real-world scenes -->
-      <div class="content-with-figure">
-        <div class="content-text">
-          <h3>Held-out Real-World Laboratory Scenes</h3>
-          <p>Beyond 88 controlled scenes, TransBiolab includes <strong>10 held-out real-world laboratory scenes</strong> with new layouts, more distractors, and different environmental conditions. Across all scenes together, the dataset contains <strong>98 scenes, 161,315 RGB-D frames, and ~1.03M</strong> object instance annotations.</p>
-        </div>
-        <figure class="content-figure glass-card">
-          <img src="figures/realworld.png" alt="Real-world laboratory scenes" loading="lazy">
-          <figcaption>Fig. 5: Held-out real-world laboratory scenes.</figcaption>
-        </figure>
-      </div>
-
       <!-- Matrix -->
       <div class="glass-card fig-full">
         <div style="overflow-x:auto; padding:16px;">
@@ -211,7 +204,13 @@
       <!-- Metadata -->
       <div class="glass-card fig-full">
         <img src="figures/metadata.png" alt="Dataset metadata" loading="lazy" style="width:100%; border-radius:12px; padding:16px;">
-        <figcaption style="padding:0 28px 20px; color:var(--text-muted); font-size:13px; font-style:italic;">Fig. 8: Compact metadata visualization — objectwise viewpoint coverage and the released 6D annotation distributions over translation and rotation axes.</figcaption>
+        <figcaption style="padding:0 28px 20px; color:var(--text-muted); font-size:13px; font-style:italic;">Fig. 8a: Compact metadata visualization — objectwise viewpoint coverage and the released 6D annotation distributions over translation and rotation axes.</figcaption>
+      </div>
+
+      <!-- 6D Metadata -->
+      <div class="glass-card fig-full">
+        <img src="figures/metadata_6d.png" alt="6D annotation distributions" loading="lazy" style="width:100%; border-radius:12px; padding:16px;">
+        <figcaption style="padding:0 28px 20px; color:var(--text-muted); font-size:13px; font-style:italic;">Fig. 8b: 6D pose annotation distributions across translation and rotation axes.</figcaption>
       </div>
 
       <!-- Data format -->
@@ -246,7 +245,7 @@
 
       <!-- ── 4.1 FoundationPose ── -->
       <h3 class="subsection-title" id="fp-results">4.1 &nbsp;FoundationPose for 6D Pose Estimation</h3>
-      <p class="subsection-desc">FoundationPose uses GT masks and CAD models with 15 refinement iterations. ADD-S AUC (threshold 0.1m) and ADD AUC measure pose accuracy accounting for symmetric objects.</p>
+      <p class="subsection-desc">For each target instance, we load the RGB-D frame, visible mask, camera intrinsics, and CAD model, then run the standard register-refine pipeline with 15 refinement iterations. We report ADD, ADD-S, and AUC up to 0.1m.</p>
 
       <!-- FP Overall -->
       <div class="method-compare">
@@ -417,6 +416,34 @@
           </table>
         </div>
       </div>
+
+      <!-- Table 7: SAM3 by viewpoint -->
+      <div class="glass-card table-card">
+        <h3 class="card-title">Table 7: SAM 3 Across 10 Sampled Viewpoints</h3>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead><tr><th>View</th><th>Elev.</th><th>Azim.</th><th>mIoU</th><th>Match Rate</th><th>mF1</th></tr></thead>
+            <tbody>
+              <tr><td>VP1</td><td>-22.2°</td><td>-68.1°</td><td>0.681</td><td>88.0%</td><td>0.856</td></tr>
+              <tr><td>VP2</td><td>-24.6°</td><td>-99.0°</td><td>0.681</td><td>91.1%</td><td>0.837</td></tr>
+              <tr><td>VP3</td><td>-27.3°</td><td>-74.6°</td><td>0.684</td><td>89.6%</td><td>0.847</td></tr>
+              <tr><td>VP4</td><td>-32.6°</td><td>-86.1°</td><td>0.685</td><td>86.3%</td><td>0.874</td></tr>
+              <tr><td>VP5</td><td>-40.9°</td><td>-85.0°</td><td>0.687</td><td>85.5%</td><td>0.880</td></tr>
+              <tr><td>VP6</td><td>-51.1°</td><td>-86.2°</td><td><span class="val-good">0.693</span></td><td>82.4%</td><td>0.905</td></tr>
+              <tr><td>VP7</td><td>-51.9°</td><td>-103.1°</td><td>0.682</td><td>84.0%</td><td>0.886</td></tr>
+              <tr><td>VP8</td><td>-53.4°</td><td>-75.2°</td><td><span class="val-good">0.692</span></td><td>82.4%</td><td>0.905</td></tr>
+              <tr><td>VP9</td><td>-58.9°</td><td>-83.4°</td><td><span class="val-medium">0.609</span></td><td>71.2%</td><td>0.919</td></tr>
+              <tr><td>VP10</td><td>-62.0°</td><td>-75.6°</td><td><span class="val-poor">0.583</span></td><td>68.0%</td><td>0.915</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">💡</div>
+          <div class="insight-text">
+            <strong>SAM 3 viewpoint pattern:</strong> From VP1 to VP8, mIoU remains stable (0.681–0.693). The main degradation appears at steepest views — VP9 and VP10 drop to 0.609 and 0.583 mIoU, with match rates falling to 71.2% and 68.0%. Failure at steep views is driven by missed detections rather than poor mask quality (mF1 stays high at 0.919/0.915).
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -479,37 +506,31 @@
   <section class="section" id="robot">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">§ 5</span>
+        <span class="section-tag">§ 4.3</span>
         <h2 class="section-title">Real Robot Experiment</h2>
-        <p class="section-desc">End-to-end perception-to-action pipeline: segmentation → 6D pose → hand-eye calibration → grasp planning via ROS/MoveIt.</p>
+        <p class="section-desc">The system first obtains an object mask from segmentation, then estimates a target 6D pose with FoundationPose, transforms this pose to the robot base through hand-eye calibration, and finally plans grasp and placement motions through ROS/MoveIt.</p>
       </div>
 
       <div class="robot-grid">
         <div class="glass-card robot-stat-card">
           <div class="robot-effector">🦾 Franka Parallel-Jaw</div>
           <div class="robot-result">
-            <span class="robot-rate">90.67%</span>
-            <span class="robot-detail">136 / 150 trials</span>
+            <span class="robot-rate">65.3%</span>
+            <span class="robot-detail">98 / 150 trials</span>
           </div>
         </div>
         <div class="glass-card robot-stat-card">
           <div class="robot-effector">🤖 LinkerHand 10-DoF</div>
           <div class="robot-result">
-            <span class="robot-rate">82.67%</span>
-            <span class="robot-detail">124 / 150 trials</span>
+            <span class="robot-rate">56.67%</span>
+            <span class="robot-detail">85 / 150 trials</span>
           </div>
         </div>
       </div>
 
-      <div class="content-with-figure">
-        <figure class="content-figure glass-card">
-          <img src="figures/robot_platform.jpg" alt="Robot platform" loading="lazy">
-          <figcaption>Fig. 10: Real robot platform for transparent-object manipulation.</figcaption>
-        </figure>
-        <figure class="content-figure glass-card">
-          <img src="figures/dexterous_hand.jpg" alt="Dexterous hand grasping" loading="lazy">
-          <figcaption>Fig. 11: Dexterous-hand grasp synthesis from predicted 6D pose.</figcaption>
-        </figure>
+      <div class="glass-card fig-full" style="margin-bottom:20px;">
+        <img src="figures/robot_platform.jpg" alt="Robot platform" loading="lazy" style="width:100%; border-radius:12px;">
+        <figcaption style="padding:12px 28px 20px; color:var(--text-muted); font-size:13px; font-style:italic;">Fig. 10: Real robot platform used for cluttered transparent-object manipulation experiments.</figcaption>
       </div>
 
       <!-- Video Player -->
