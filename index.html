@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransBiolab Transparent Object Dataset — Evaluation Report</title>
+  <meta name="description" content="Comprehensive evaluation of SAM3 segmentation and FoundationPose 6D pose estimation on the TransBiolab transparent object dataset.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- Navigation -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">🔬</span>
+        <span class="logo-text">TransBiolab</span>
+      </a>
+      <div class="nav-links">
+        <a href="#dataset" class="nav-link">Dataset</a>
+        <a href="#objects" class="nav-link">Objects</a>
+        <a href="#results" class="nav-link">Results</a>
+        <a href="#visualization" class="nav-link">Visualization</a>
+        <a href="#analysis" class="nav-link">Analysis</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Transparent Object Benchmark</div>
+      <h1 class="hero-title">
+        TransBiolab
+        <span class="hero-subtitle">Dataset & Evaluation Report</span>
+      </h1>
+      <p class="hero-desc">
+        Comprehensive evaluation of <strong>SAM3</strong> segmentation and <strong>FoundationPose</strong> 6D pose estimation
+        on transparent laboratory objects. 15 object categories across 28 scenes with 10 representative viewpoints.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-value">15</div>
+          <div class="stat-label">Object Types</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">28</div>
+          <div class="stat-label">Scenes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Viewpoints</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="stat-value">80.8<span class="stat-unit">%</span></div>
+          <div class="stat-label">ADD-S AUC</div>
+        </div>
+        <div class="stat-card highlight-alt">
+          <div class="stat-value">66.8<span class="stat-unit">%</span></div>
+          <div class="stat-label">SAM3 mIoU</div>
+        </div>
+      </div>
+      <a href="#dataset" class="hero-cta">Explore Dataset ↓</a>
+    </div>
+  </header>
+
+  <!-- Dataset Structure Section -->
+  <section class="section" id="dataset">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">01</span>
+        <h2 class="section-title">Dataset Structure</h2>
+        <p class="section-desc">TransBiolab captures transparent laboratory objects using Intel RealSense cameras, providing RGB-D images with precise 6DoF ground truth annotations.</p>
+      </div>
+
+      <div class="dataset-grid">
+        <!-- Directory Tree -->
+        <div class="glass-card tree-card">
+          <h3 class="card-title">📁 Scene Directory Layout</h3>
+          <div class="dir-tree">
+<pre class="tree-code"><span class="tree-scene">000020/</span>                              <span class="tree-comment"># Scene directory</span>
+├── <span class="tree-dir">rgb/</span>                             <span class="tree-comment"># Color images</span>
+│   ├── <span class="tree-file">000000.png</span>                   <span class="tree-comment"># Frame 0</span>
+│   ├── <span class="tree-file">000001.png</span>                   <span class="tree-comment"># Frame 1</span>
+│   └── ...                          <span class="tree-comment"># {frame_id}.png</span>
+│
+├── <span class="tree-dir">depth/</span>                           <span class="tree-comment"># Depth maps</span>
+│   ├── <span class="tree-file">000000.png</span>                   <span class="tree-comment"># Frame 0</span>
+│   └── ...                          <span class="tree-comment"># 1:1 with rgb/</span>
+│
+├── <span class="tree-dir">mask/</span>                            <span class="tree-comment"># Full projected masks</span>
+│   ├── <span class="tree-file">000000_000000.png</span>            <span class="tree-comment"># Frame 0, Object 0</span>
+│   ├── <span class="tree-file">000000_000001.png</span>            <span class="tree-comment"># Frame 0, Object 1</span>
+│   └── ...                          <span class="tree-comment"># {frame_id}_{obj_idx}.png</span>
+│
+├── <span class="tree-dir">mask_visib/</span>                      <span class="tree-comment"># Visible-only masks</span>
+│   ├── <span class="tree-file">000000_000000.png</span>            <span class="tree-comment"># Same naming as mask/</span>
+│   └── ...
+│
+├── <span class="tree-json">scene_camera.json</span>                <span class="tree-comment"># Per-frame camera intrinsics</span>
+├── <span class="tree-json">scene_gt.json</span>                    <span class="tree-comment"># Per-frame GT 6DoF pose</span>
+└── <span class="tree-json">scene_gt_info.json</span>               <span class="tree-comment"># Per-frame visibility info</span></pre>
+          </div>
+        </div>
+
+        <!-- Data Details -->
+        <div class="data-details">
+          <div class="glass-card detail-card">
+            <div class="detail-icon">🖼️</div>
+            <h4>RGB Images</h4>
+            <p>1280×720 color images captured by Intel RealSense D415 camera. PNG format with lossless compression.</p>
+            <div class="detail-tag">rgb/{frame_id}.png</div>
+          </div>
+          <div class="glass-card detail-card">
+            <div class="detail-icon">📐</div>
+            <h4>Depth Maps</h4>
+            <p>Aligned depth maps in 16-bit PNG. Each pixel stores depth in millimeters. Transparent regions may have missing depth.</p>
+            <div class="detail-tag">depth/{frame_id}.png</div>
+          </div>
+          <div class="glass-card detail-card">
+            <div class="detail-icon">🎭</div>
+            <h4>Segmentation Masks</h4>
+            <p><strong>mask/</strong>: Full projection including occluded parts. <strong>mask_visib/</strong>: Only visible portions, accounting for inter-object occlusion.</p>
+            <div class="detail-tag">{frame_id}_{obj_idx}.png</div>
+          </div>
+          <div class="glass-card detail-card">
+            <div class="detail-icon">📋</div>
+            <h4>JSON Annotations</h4>
+            <p><strong>scene_gt.json</strong>: 4×4 SE(3) pose per object. <strong>scene_camera.json</strong>: Camera K matrix. <strong>scene_gt_info.json</strong>: Visibility fraction & bounding box.</p>
+            <div class="detail-tag">BOP format compatible</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSON Examples -->
+      <div class="json-examples">
+        <div class="glass-card json-card">
+          <h4 class="json-title">scene_gt.json</h4>
+          <pre class="json-code"><code>{
+  <span class="json-key">"0"</span>: [
+    {
+      <span class="json-key">"cam_R_m2c"</span>: [0.98, -0.03, 0.17, ...],  <span class="json-comment">// 3×3 rotation (row-major)</span>
+      <span class="json-key">"cam_t_m2c"</span>: [-52.3, 48.1, 621.7],       <span class="json-comment">// translation in mm</span>
+      <span class="json-key">"obj_id"</span>: 5                                <span class="json-comment">// object category ID</span>
+    },
+    ...
+  ]
+}</code></pre>
+        </div>
+        <div class="glass-card json-card">
+          <h4 class="json-title">scene_camera.json</h4>
+          <pre class="json-code"><code>{
+  <span class="json-key">"0"</span>: {
+    <span class="json-key">"cam_K"</span>: [921.8, 0, 640.4,            <span class="json-comment">// 3×3 intrinsic matrix</span>
+              0, 921.5, 354.3,
+              0, 0, 1],
+    <span class="json-key">"depth_scale"</span>: 0.1                     <span class="json-comment">// depth_pixel × scale = mm</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Object Catalog Section -->
+  <section class="section section-dark" id="objects">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">02</span>
+        <h2 class="section-title">Object Catalog</h2>
+        <p class="section-desc">15 transparent laboratory items spanning plates, tubes, bottles, and containers — each presenting unique challenges for perception algorithms.</p>
+      </div>
+
+      <div class="obj-catalog">
+        <div class="obj-group">
+          <div class="group-label">🟢 Plate-type (ADD-S AUC > 90%)</div>
+          <div class="obj-row">
+            <div class="obj-chip excellent"><span class="obj-id">5</span> 6-well plate</div>
+            <div class="obj-chip excellent"><span class="obj-id">6</span> 12-well plate</div>
+            <div class="obj-chip excellent"><span class="obj-id">7</span> 24-well plate</div>
+            <div class="obj-chip excellent"><span class="obj-id">18</span> 96-well plate</div>
+          </div>
+        </div>
+        <div class="obj-group">
+          <div class="group-label">🟢 Dish & Rack (ADD-S AUC > 90%)</div>
+          <div class="obj-row">
+            <div class="obj-chip excellent"><span class="obj-id">1</span> Pipette</div>
+            <div class="obj-chip excellent"><span class="obj-id">2</span> Tube-rack</div>
+            <div class="obj-chip excellent"><span class="obj-id">3</span> 60mm dish</div>
+            <div class="obj-chip excellent"><span class="obj-id">11</span> 90mm dish</div>
+          </div>
+        </div>
+        <div class="obj-group">
+          <div class="group-label">🟡 Tubes & Small Bottles (70-85%)</div>
+          <div class="obj-row">
+            <div class="obj-chip medium"><span class="obj-id">9</span> 35mm dish</div>
+            <div class="obj-chip medium"><span class="obj-id">13</span> 15ml centrifuge tube</div>
+            <div class="obj-chip medium"><span class="obj-id">14</span> 50ml centrifuge tube</div>
+            <div class="obj-chip medium"><span class="obj-id">15</span> 25ml flask</div>
+            <div class="obj-chip medium"><span class="obj-id">19</span> Grex 1L bioreactor</div>
+          </div>
+        </div>
+        <div class="obj-group">
+          <div class="group-label">🔴 Large / Complex (< 55%)</div>
+          <div class="obj-row">
+            <div class="obj-chip poor"><span class="obj-id">16</span> 75ml flask</div>
+            <div class="obj-chip poor"><span class="obj-id">17</span> 125ml flask</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quantitative Results Section -->
+  <section class="section" id="results">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">03</span>
+        <h2 class="section-title">Quantitative Results</h2>
+        <p class="section-desc">Per-object performance comparison between SAM3 (text-prompted segmentation) and FoundationPose (model-based 6D pose estimation).</p>
+      </div>
+
+      <!-- Method Comparison Cards -->
+      <div class="method-compare">
+        <div class="glass-card method-card sam3-card">
+          <div class="method-header">
+            <div class="method-badge sam3">SAM3</div>
+            <div class="method-type">Segmentation</div>
+          </div>
+          <div class="method-metric-big">
+            <span class="metric-val">66.8%</span>
+            <span class="metric-name">mIoU</span>
+          </div>
+          <div class="method-details">
+            <div class="md-row"><span>Match Rate</span><span>82.8%</span></div>
+            <div class="md-row"><span>Instances</span><span>1,247</span></div>
+            <div class="md-row"><span>Prompt Mode</span><span>Text</span></div>
+          </div>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="glass-card method-card fp-card">
+          <div class="method-header">
+            <div class="method-badge fp">FoundationPose</div>
+            <div class="method-type">6D Pose Estimation</div>
+          </div>
+          <div class="method-metric-big">
+            <span class="metric-val">80.8%</span>
+            <span class="metric-name">ADD-S AUC</span>
+          </div>
+          <div class="method-details">
+            <div class="md-row"><span>ADD AUC</span><span>53.9%</span></div>
+            <div class="md-row"><span>Instances</span><span>1,892</span></div>
+            <div class="md-row"><span>Refine Iters</span><span>15</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-object Table -->
+      <div class="glass-card table-card">
+        <h3 class="card-title">Per-Object Performance</h3>
+        <div class="table-tabs">
+          <button class="tab-btn active" data-tab="combined" id="tabCombined">Combined View</button>
+          <button class="tab-btn" data-tab="sam3" id="tabSam3">SAM3 Only</button>
+          <button class="tab-btn" data-tab="fp" id="tabFP">FoundationPose Only</button>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table" id="mainTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Object Name</th>
+                <th class="sam3-col">mIoU</th>
+                <th class="sam3-col">Precision</th>
+                <th class="sam3-col">Recall</th>
+                <th class="sam3-col">Match%</th>
+                <th class="fp-col">ADD-S AUC</th>
+                <th class="fp-col">ADD AUC</th>
+                <th class="fp-col">ADD-S (mm)</th>
+                <th class="fp-col">t_err (mm)</th>
+                <th class="fp-col">R_err (°)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td><td><span class="obj-name">Pipette</span></td>
+                <td class="sam3-col"><span class="val-good">0.718</span></td><td class="sam3-col">0.880</td><td class="sam3-col">0.895</td><td class="sam3-col">89.9%</td>
+                <td class="fp-col"><span class="val-excellent">93.0%</span></td><td class="fp-col">88.2%</td><td class="fp-col">10.8</td><td class="fp-col">14.1</td><td class="fp-col">14.6</td>
+              </tr>
+              <tr>
+                <td>2</td><td><span class="obj-name">Tube-rack</span></td>
+                <td class="sam3-col"><span class="val-medium">0.640</span></td><td class="sam3-col">0.724</td><td class="sam3-col">0.977</td><td class="sam3-col">90.0%</td>
+                <td class="fp-col"><span class="val-excellent">94.1%</span></td><td class="fp-col">46.2%</td><td class="fp-col">9.9</td><td class="fp-col">16.9</td><td class="fp-col">89.2</td>
+              </tr>
+              <tr>
+                <td>3</td><td><span class="obj-name">60mm dish</span></td>
+                <td class="sam3-col"><span class="val-good">0.818</span></td><td class="sam3-col">0.897</td><td class="sam3-col">0.948</td><td class="sam3-col">95.5%</td>
+                <td class="fp-col"><span class="val-excellent">90.1%</span></td><td class="fp-col">56.9%</td><td class="fp-col">9.9</td><td class="fp-col">10.7</td><td class="fp-col">139.8</td>
+              </tr>
+              <tr>
+                <td>5</td><td><span class="obj-name">6-well plate</span></td>
+                <td class="sam3-col"><span class="val-good">0.766</span></td><td class="sam3-col">0.950</td><td class="sam3-col">0.945</td><td class="sam3-col">85.0%</td>
+                <td class="fp-col"><span class="val-excellent">91.7%</span></td><td class="fp-col">49.2%</td><td class="fp-col">8.6</td><td class="fp-col">14.5</td><td class="fp-col">90.9</td>
+              </tr>
+              <tr>
+                <td>6</td><td><span class="obj-name">12-well plate</span></td>
+                <td class="sam3-col"><span class="val-good">0.797</span></td><td class="sam3-col">0.950</td><td class="sam3-col">0.953</td><td class="sam3-col">87.8%</td>
+                <td class="fp-col"><span class="val-excellent">91.9%</span></td><td class="fp-col">44.2%</td><td class="fp-col">8.1</td><td class="fp-col">13.1</td><td class="fp-col">102.7</td>
+              </tr>
+              <tr>
+                <td>7</td><td><span class="obj-name">24-well plate</span></td>
+                <td class="sam3-col"><span class="val-good">0.802</span></td><td class="sam3-col">0.955</td><td class="sam3-col">0.954</td><td class="sam3-col">87.8%</td>
+                <td class="fp-col"><span class="val-excellent">93.4%</span></td><td class="fp-col">52.8%</td><td class="fp-col">6.6</td><td class="fp-col">11.0</td><td class="fp-col">78.7</td>
+              </tr>
+              <tr class="row-warn">
+                <td>9</td><td><span class="obj-name">35mm dish</span></td>
+                <td class="sam3-col"><span class="val-poor">0.000</span></td><td class="sam3-col">0.000</td><td class="sam3-col">0.000</td><td class="sam3-col">0.0%</td>
+                <td class="fp-col"><span class="val-good">83.8%</span></td><td class="fp-col">66.7%</td><td class="fp-col">17.0</td><td class="fp-col">18.5</td><td class="fp-col">135.1</td>
+              </tr>
+              <tr>
+                <td>11</td><td><span class="obj-name">90mm dish</span></td>
+                <td class="sam3-col"><span class="val-good">0.845</span></td><td class="sam3-col">0.932</td><td class="sam3-col">0.929</td><td class="sam3-col">97.1%</td>
+                <td class="fp-col"><span class="val-excellent">90.6%</span></td><td class="fp-col">37.6%</td><td class="fp-col">11.0</td><td class="fp-col">13.1</td><td class="fp-col">125.3</td>
+              </tr>
+              <tr>
+                <td>13</td><td><span class="obj-name">15ml centrifuge tube</span></td>
+                <td class="sam3-col"><span class="val-poor">0.484</span></td><td class="sam3-col">0.872</td><td class="sam3-col">0.747</td><td class="sam3-col">71.7%</td>
+                <td class="fp-col"><span class="val-medium">75.4%</span></td><td class="fp-col">64.4%</td><td class="fp-col">24.8</td><td class="fp-col">37.3</td><td class="fp-col">90.2</td>
+              </tr>
+              <tr>
+                <td>14</td><td><span class="obj-name">50ml centrifuge tube</span></td>
+                <td class="sam3-col"><span class="val-poor">0.495</span></td><td class="sam3-col">0.901</td><td class="sam3-col">0.710</td><td class="sam3-col">75.6%</td>
+                <td class="fp-col"><span class="val-good">81.0%</span></td><td class="fp-col">58.7%</td><td class="fp-col">19.7</td><td class="fp-col">41.2</td><td class="fp-col">108.8</td>
+              </tr>
+              <tr>
+                <td>15</td><td><span class="obj-name">25ml flask</span></td>
+                <td class="sam3-col"><span class="val-good">0.735</span></td><td class="sam3-col">0.892</td><td class="sam3-col">0.882</td><td class="sam3-col">91.3%</td>
+                <td class="fp-col"><span class="val-medium">77.7%</span></td><td class="fp-col">57.8%</td><td class="fp-col">38.1</td><td class="fp-col">54.3</td><td class="fp-col">81.0</td>
+              </tr>
+              <tr class="row-warn">
+                <td>16</td><td><span class="obj-name">75ml flask</span></td>
+                <td class="sam3-col"><span class="val-medium">0.574</span></td><td class="sam3-col">0.832</td><td class="sam3-col">0.878</td><td class="sam3-col">77.1%</td>
+                <td class="fp-col"><span class="val-poor">54.2%</span></td><td class="fp-col">35.0%</td><td class="fp-col">53.2</td><td class="fp-col">82.4</td><td class="fp-col">86.8</td>
+              </tr>
+              <tr class="row-warn">
+                <td>17</td><td><span class="obj-name">125ml flask</span></td>
+                <td class="sam3-col"><span class="val-medium">0.587</span></td><td class="sam3-col">0.898</td><td class="sam3-col">0.786</td><td class="sam3-col">78.6%</td>
+                <td class="fp-col"><span class="val-poor">41.0%</span></td><td class="fp-col">28.1%</td><td class="fp-col">75.1</td><td class="fp-col">90.6</td><td class="fp-col">85.5</td>
+              </tr>
+              <tr>
+                <td>18</td><td><span class="obj-name">96-well plate</span></td>
+                <td class="sam3-col"><span class="val-good">0.721</span></td><td class="sam3-col">0.954</td><td class="sam3-col">0.922</td><td class="sam3-col">81.4%</td>
+                <td class="fp-col"><span class="val-excellent">91.6%</span></td><td class="fp-col">53.5%</td><td class="fp-col">8.6</td><td class="fp-col">18.3</td><td class="fp-col">142.6</td>
+              </tr>
+              <tr>
+                <td>19</td><td><span class="obj-name">Grex 1L bioreactor</span></td>
+                <td class="sam3-col"><span class="val-excellent">0.914</span></td><td class="sam3-col">0.947</td><td class="sam3-col">0.963</td><td class="sam3-col">100%</td>
+                <td class="fp-col"><span class="val-medium">72.9%</span></td><td class="fp-col">45.4%</td><td class="fp-col">31.9</td><td class="fp-col">25.2</td><td class="fp-col">90.0</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td></td><td><strong>Overall</strong></td>
+                <td class="sam3-col"><strong>0.668</strong></td><td class="sam3-col">—</td><td class="sam3-col">—</td><td class="sam3-col"><strong>82.8%</strong></td>
+                <td class="fp-col"><strong>80.8%</strong></td><td class="fp-col"><strong>53.9%</strong></td><td class="fp-col"><strong>23.2</strong></td><td class="fp-col">—</td><td class="fp-col">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Viewpoint Analysis -->
+      <div class="glass-card table-card">
+        <h3 class="card-title">Viewpoint Analysis</h3>
+        <p class="card-subtitle">Performance variation across 10 K-means selected viewpoints (sorted by elevation angle)</p>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead>
+              <tr>
+                <th>Viewpoint</th>
+                <th>Elevation</th>
+                <th>Azimuth</th>
+                <th class="sam3-col">SAM3 mIoU</th>
+                <th class="fp-col">FP ADD-S AUC</th>
+                <th class="fp-col">FP ADD AUC</th>
+                <th>Δ Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>VP01</td><td>-22.2°</td><td>-68.1°</td><td class="sam3-col">0.681</td><td class="fp-col"><span class="val-medium">72.2%</span></td><td class="fp-col">47.2%</td><td><span class="trend-bar" style="--w:40%"></span></td></tr>
+              <tr><td>VP02</td><td>-24.6°</td><td>-99.0°</td><td class="sam3-col">0.681</td><td class="fp-col"><span class="val-medium">72.2%</span></td><td class="fp-col">43.2%</td><td><span class="trend-bar" style="--w:40%"></span></td></tr>
+              <tr><td>VP03</td><td>-27.3°</td><td>-74.6°</td><td class="sam3-col">0.684</td><td class="fp-col"><span class="val-medium">74.0%</span></td><td class="fp-col">41.6%</td><td><span class="trend-bar" style="--w:45%"></span></td></tr>
+              <tr><td>VP04</td><td>-32.6°</td><td>-86.1°</td><td class="sam3-col">0.685</td><td class="fp-col"><span class="val-medium">73.9%</span></td><td class="fp-col">48.7%</td><td><span class="trend-bar" style="--w:45%"></span></td></tr>
+              <tr><td>VP05</td><td>-40.9°</td><td>-85.0°</td><td class="sam3-col">0.687</td><td class="fp-col"><span class="val-good">79.9%</span></td><td class="fp-col">54.1%</td><td><span class="trend-bar" style="--w:60%"></span></td></tr>
+              <tr><td>VP06</td><td>-51.1°</td><td>-86.2°</td><td class="sam3-col"><span class="val-good">0.693</span></td><td class="fp-col"><span class="val-excellent">88.0%</span></td><td class="fp-col">60.3%</td><td><span class="trend-bar" style="--w:85%"></span></td></tr>
+              <tr><td>VP07</td><td>-51.9°</td><td>-103.1°</td><td class="sam3-col">0.682</td><td class="fp-col"><span class="val-good">84.7%</span></td><td class="fp-col">56.3%</td><td><span class="trend-bar" style="--w:75%"></span></td></tr>
+              <tr><td>VP08</td><td>-53.4°</td><td>-75.2°</td><td class="sam3-col"><span class="val-good">0.692</span></td><td class="fp-col"><span class="val-excellent">87.1%</span></td><td class="fp-col">60.3%</td><td><span class="trend-bar" style="--w:82%"></span></td></tr>
+              <tr><td>VP09</td><td>-58.9°</td><td>-83.4°</td><td class="sam3-col"><span class="val-medium">0.609</span></td><td class="fp-col"><span class="val-excellent">87.6%</span></td><td class="fp-col">64.8%</td><td><span class="trend-bar" style="--w:84%"></span></td></tr>
+              <tr><td>VP10</td><td>-62.0°</td><td>-75.6°</td><td class="sam3-col"><span class="val-medium">0.583</span></td><td class="fp-col"><span class="val-excellent">87.8%</span></td><td class="fp-col">61.5%</td><td><span class="trend-bar" style="--w:85%"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">💡</div>
+          <div class="insight-text">
+            <strong>Key Insight:</strong> FoundationPose shows a clear elevation dependency — steep viewing angles (> 45°) achieve 85-88% ADD-S AUC while shallow angles (< 33°) only reach 72-74%. In contrast, SAM3 mIoU remains relatively stable but slightly degrades at the steepest angles due to increased object overlap.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visual Comparison Section -->
+  <section class="section section-dark" id="visualization">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">04</span>
+        <h2 class="section-title">Qualitative Visualization</h2>
+        <p class="section-desc">Side-by-side comparison of SAM3 segmentation masks and FoundationPose 3D bounding box projections on complex multi-object scenes.</p>
+      </div>
+
+      <!-- View Mode Selector -->
+      <div class="view-controls">
+        <div class="view-mode-group">
+          <button class="view-btn active" data-view="comparison" id="viewComparison">
+            <span class="view-icon">⬜⬜</span> Comparison
+          </button>
+          <button class="view-btn" data-view="gallery" id="viewGallery">
+            <span class="view-icon">⊞</span> Gallery
+          </button>
+        </div>
+        <div class="scene-filter">
+          <button class="scene-btn active" data-scene="all">All</button>
+          <button class="scene-btn" data-scene="000013">Scene 13</button>
+          <button class="scene-btn" data-scene="000014">Scene 14</button>
+        </div>
+      </div>
+
+      <!-- Comparison View -->
+      <div class="vis-comparison" id="visComparison">
+        <div class="comparison-nav">
+          <button class="comp-nav-btn" id="prevFrame">‹</button>
+          <div class="comp-info">
+            <span class="comp-counter" id="compCounter">1 / 20</span>
+            <span class="comp-scene" id="compScene">Scene 000013 · Frame 000102 · VP01</span>
+          </div>
+          <button class="comp-nav-btn" id="nextFrame">›</button>
+        </div>
+
+        <!-- Image tabs for current frame -->
+        <div class="img-tab-group">
+          <button class="img-tab active" data-type="rgb" id="imgTabRGB">RGB Input</button>
+          <button class="img-tab" data-type="sam3" id="imgTabSAM3">SAM3 Prediction</button>
+          <button class="img-tab" data-type="fp_gt" id="imgTabFPGT">FP Ground Truth</button>
+          <button class="img-tab" data-type="fp_pred" id="imgTabFPPred">FP Prediction</button>
+          <button class="img-tab" data-type="side" id="imgTabSide">Side by Side</button>
+        </div>
+
+        <div class="comp-viewport" id="compViewport">
+          <div class="comp-img-container" id="compImgContainer">
+            <!-- Single image mode -->
+            <img class="comp-img" id="compImgSingle" src="" alt="Visualization">
+            <!-- Side-by-side mode (hidden by default) -->
+            <div class="comp-side-by-side" id="compSideBySide" style="display:none">
+              <div class="side-panel">
+                <div class="side-label">SAM3 Segmentation</div>
+                <img class="side-img" id="sideImgLeft" src="" alt="SAM3">
+              </div>
+              <div class="side-panel">
+                <div class="side-label">FoundationPose Prediction</div>
+                <img class="side-img" id="sideImgRight" src="" alt="FoundationPose">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div class="thumb-strip" id="thumbStrip"></div>
+      </div>
+
+      <!-- Gallery View -->
+      <div class="vis-gallery" id="visGallery" style="display:none">
+        <div class="gallery-type-selector">
+          <button class="gal-type-btn active" data-gtype="sam3">SAM3</button>
+          <button class="gal-type-btn" data-gtype="fp_pred">FoundationPose</button>
+          <button class="gal-type-btn" data-gtype="fp_gt">Ground Truth</button>
+          <button class="gal-type-btn" data-gtype="rgb">RGB</button>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+
+      <!-- Lightbox -->
+      <div class="lightbox" id="lightbox">
+        <button class="lb-close" id="lbClose">✕</button>
+        <button class="lb-prev" id="lbPrev">‹</button>
+        <button class="lb-next" id="lbNext">›</button>
+        <img class="lb-img" id="lbImg" src="" alt="Full size">
+        <div class="lb-caption" id="lbCaption"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Findings Section -->
+  <section class="section" id="analysis">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">05</span>
+        <h2 class="section-title">Key Findings</h2>
+      </div>
+
+      <div class="findings-grid">
+        <div class="glass-card finding-card">
+          <div class="finding-num">01</div>
+          <h4>Plate-type Objects Excel</h4>
+          <p>Flat, plate-shaped objects (microplates, petri dishes) achieve <strong>91-94% ADD-S AUC</strong> and <strong>>0.72 mIoU</strong>, making them ideal for both pose estimation and segmentation tasks.</p>
+        </div>
+        <div class="glass-card finding-card">
+          <div class="finding-num">02</div>
+          <h4>Large Transparent Bottles Struggle</h4>
+          <p>Objects like 75ml flask and 125ml flask score as low as <strong>41-54% ADD-S AUC</strong>. The large transparent volume causes severe depth estimation errors and feature ambiguity.</p>
+        </div>
+        <div class="glass-card finding-card">
+          <div class="finding-num">03</div>
+          <h4>Viewpoint Matters for Pose</h4>
+          <p>FoundationPose gains <strong>+15.6%</strong> AUC when moving from shallow (22°) to steep (62°) viewing angle. Steeper views reduce transparency artifacts and improve depth signal quality.</p>
+        </div>
+        <div class="glass-card finding-card">
+          <div class="finding-num">04</div>
+          <h4>SAM3 Fails on Tiny Objects</h4>
+          <p>The 35mm dish (eppendorf_cap) has <strong>0% match rate</strong> with SAM3 text prompts, highlighting the challenge of segmenting very small transparent objects with language-guided methods.</p>
+        </div>
+        <div class="glass-card finding-card">
+          <div class="finding-num">05</div>
+          <h4>Symmetry Affects ADD Metric</h4>
+          <p>Highly symmetric objects show <strong>26.9% gap</strong> between ADD-S and ADD metrics. This confirms ADD-S as the more appropriate metric for rotationally symmetric transparent objects.</p>
+        </div>
+        <div class="glass-card finding-card">
+          <div class="finding-num">06</div>
+          <h4>Scene Complexity ≠ Difficulty</h4>
+          <p>Performance is dominated by <strong>object intrinsic properties</strong>, not scene crowdedness. Scenes with 4 objects but containing flasks score lower than 10-object scenes with mostly plates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-info">
+          <p class="footer-title">TransBiolab Transparent Object Dataset</p>
+          <p class="footer-sub">Evaluation Report — SAM3 Segmentation & FoundationPose 6D Pose</p>
+        </div>
+        <div class="footer-meta">
+          <p>28 Scenes · 15 Objects · 10 Viewpoints</p>
+          <p>Generated April 2026</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
