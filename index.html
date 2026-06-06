@@ -23,6 +23,7 @@
         <a href="#dataset" class="nav-link">Dataset</a>
         <a href="#capture" class="nav-link">Capture</a>
         <a href="#benchmarks" class="nav-link">Benchmarks</a>
+        <a href="#rebuttal" class="nav-link">Rebuttal</a>
         <a href="#visualization" class="nav-link">Visualization</a>
         <a href="#robot" class="nav-link">Robot</a>
       </div>
@@ -442,6 +443,138 @@
           <div class="insight-text">
             <strong>SAM 3 viewpoint pattern:</strong> From VP1 to VP8, mIoU remains stable (0.681–0.693). The main degradation appears at steepest views — VP9 and VP10 drop to 0.609 and 0.583 mIoU, with match rates falling to 71.2% and 68.0%. Failure at steep views is driven by missed detections rather than poor mask quality (mF1 stays high at 0.919/0.915).
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ REBUTTAL UPDATES ═══════════════════ -->
+  <section class="section section-rebuttal" id="rebuttal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Rebuttal</span>
+        <h2 class="section-title">Additional Baselines & Analyses</h2>
+        <p class="section-desc">We thank all reviewers for the constructive comments. We address the main concerns below. TBiolab-HO denotes the 10 held-out lab scenes.</p>
+      </div>
+
+      <div class="glass-card rebuttal-intro-card">
+        <h3 class="card-title">P1. Additional Baselines</h3>
+        <p>To Reviewers zrnj, 5Exs, and TgfS, we added TransLab, ClearGrasp, DA3, and MegaPose-6D, while keeping SAM3 and FoundationPose.</p>
+      </div>
+
+      <div class="glass-card table-card rebuttal-table-card">
+        <h3 class="card-title">Segmentation</h3>
+        <p class="table-note">Dataset-defined masks are used; this mask-level protocol complements the paper's instance-matching SAM3 protocol. All metrics are higher-is-better.</p>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead>
+              <tr><th>Dataset</th><th>Method</th><th>Target</th><th>IoU</th><th>Precision</th><th>Recall</th><th>F1</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>TransBiolab</td><td>SAM3</td><td>object mask</td><td>0.662</td><td>0.881</td><td>0.703</td><td>0.764</td></tr>
+              <tr><td>TransBiolab</td><td>TransLab</td><td>object mask</td><td>0.363</td><td>0.586</td><td>0.653</td><td>0.496</td></tr>
+              <tr><td>ClearPose</td><td>SAM3</td><td>object mask</td><td>0.699</td><td>0.885</td><td>0.744</td><td>0.789</td></tr>
+              <tr><td>ClearPose</td><td>TransLab</td><td>object mask</td><td>0.491</td><td>0.569</td><td>0.853</td><td>0.632</td></tr>
+              <tr><td>Trans10K</td><td>SAM3</td><td>object mask</td><td>0.704</td><td>0.821</td><td>0.827</td><td>0.824</td></tr>
+              <tr><td>Trans10K</td><td>TransLab</td><td>object mask</td><td>0.812</td><td>0.874</td><td>0.916</td><td>0.881</td></tr>
+              <tr><td>TBiolab-HO</td><td>SAM3</td><td>object mask</td><td>0.477</td><td>0.656</td><td>0.648</td><td>0.632</td></tr>
+              <tr><td>TBiolab-HO</td><td>TransLab</td><td>object mask</td><td>0.344</td><td>0.475</td><td>0.665</td><td>0.491</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">↘</div>
+          <div class="insight-text">This verifies domain specificity: TransLab excels on Trans10K but drops on TransBiolab and TBiolab-HO; SAM3 is lower on TransBiolab than ClearPose, so labware clutter remains unsaturated.</div>
+        </div>
+      </div>
+
+      <div class="glass-card table-card rebuttal-table-card">
+        <h3 class="card-title">Depth</h3>
+        <p class="table-note">DA3 uses metric depth, no test-time scale or shift alignment. All metrics are lower-is-better.</p>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead>
+              <tr><th>Dataset</th><th>Split</th><th>Method</th><th>Reference</th><th>AbsRel</th><th>RMSE (m)</th><th>MAE (m)</th><th>Raw missing</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>TransBiolab</td><td>all</td><td>DA3</td><td>depth GT</td><td>0.371</td><td>0.224</td><td>0.220</td><td>0.349</td></tr>
+              <tr><td>TransBiolab</td><td>all</td><td>ClearGrasp</td><td>depth GT</td><td>0.393</td><td>0.473</td><td>0.349</td><td>0.313</td></tr>
+              <tr><td>ClearPose</td><td>all</td><td>DA3</td><td>depth GT</td><td>0.161</td><td>0.221</td><td>0.141</td><td>0.390</td></tr>
+              <tr><td>ClearPose</td><td>all</td><td>ClearGrasp</td><td>depth GT</td><td>0.327</td><td>0.404</td><td>0.276</td><td>0.299</td></tr>
+              <tr><td>TransBiolab</td><td>held-out</td><td>DA3</td><td>depth GT</td><td>0.302</td><td>0.180</td><td>0.174</td><td>0.189</td></tr>
+              <tr><td>TransBiolab</td><td>held-out</td><td>ClearGrasp</td><td>depth GT</td><td>0.179</td><td>0.132</td><td>0.086</td><td>0.178</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">↘</div>
+          <div class="insight-text">Compared with ClearPose-all, both DA3 and ClearGrasp have higher object-region depth errors on TransBiolab-all, suggesting that TransBiolab remains challenging on depth estimation and completion tasks.</div>
+        </div>
+      </div>
+
+      <div class="glass-card table-card rebuttal-table-card">
+        <h3 class="card-title">6D Pose</h3>
+        <p class="table-note">FoundationPose uses RGB-D, GT mask, CAD; MegaPose-6D uses RGB, GT bbox, CAD, no depth. AUC and Success are higher-is-better; Mean error is lower-is-better.</p>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead>
+              <tr><th>Dataset</th><th>Split</th><th>Method</th><th>Input</th><th>ADD-S AUC</th><th>ADD AUC</th><th>ADD-S Mean</th><th>Success</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>TransBiolab</td><td>all</td><td>FoundationPose</td><td>RGB-D, GT mask, CAD</td><td>80.8</td><td>53.9</td><td>23.2 mm</td><td>67.86%</td></tr>
+              <tr><td>ClearPose</td><td>all</td><td>FoundationPose</td><td>RGB-D, GT mask, CAD</td><td>91.05</td><td>49.26</td><td>9.77 mm</td><td>89.53%</td></tr>
+              <tr><td>TransBiolab</td><td>all</td><td>MegaPose-6D</td><td>RGB, GT bbox, CAD, no depth</td><td>31.76</td><td>31.49</td><td>67.76 mm</td><td>34.14%</td></tr>
+              <tr><td>ClearPose</td><td>all</td><td>MegaPose-6D</td><td>RGB, GT bbox, CAD, no depth</td><td>39.84</td><td>12.40</td><td>64.29 mm</td><td>25.00%</td></tr>
+              <tr><td>TransBiolab</td><td>held-out</td><td>FoundationPose</td><td>RGB-D, GT mask, CAD</td><td>75.35</td><td>47.06</td><td>34.53 mm</td><td>62.31%</td></tr>
+              <tr><td>TransBiolab</td><td>held-out</td><td>MegaPose-6D</td><td>RGB, GT bbox, CAD, no depth</td><td>55.50</td><td>25.17</td><td>96.46 mm</td><td>26.59%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">↘</div>
+          <div class="insight-text">This verifies pose remains hard beyond depth artifacts: FoundationPose drops on TransBiolab and TBiolab-HO, while depth-free MegaPose-6D remains low, showing domain and geometry gaps.</div>
+        </div>
+      </div>
+
+      <div class="rebuttal-grid">
+        <div class="glass-card rebuttal-summary-card">
+          <h3 class="card-title">P2. Annotation Reliability</h3>
+          <p>To Reviewers W5GB, TgfS, and 5Exs, we added a geometry-consistency audit over CAD, poses, masks, intrinsics, and trajectories; it measures mutual consistency, not independent metrology.</p>
+          <table class="mini-table">
+            <tbody>
+              <tr><td>Pose-mask consistency</td><td>visible-mask IoU: mean 0.949; median 0.971</td></tr>
+              <tr><td>Same-view reprojection</td><td>median symmetric contour error: 0.62 px</td></tr>
+              <tr><td>Cross-view consistency</td><td>transferred median contour error: 0.91 px</td></tr>
+            </tbody>
+          </table>
+          <p>The 95th-percentile contour error is below 1 px for both audits. We will add overlays and the protocol.</p>
+        </div>
+
+        <div class="glass-card rebuttal-summary-card">
+          <h3 class="card-title">P3. Held-out, Stats, and Redundancy</h3>
+          <p>To Reviewers jqnR, 5Exs, TgfS, and W5GB, held-out scenes above have new layouts, more distractors, and different backgrounds and lighting.</p>
+          <table class="mini-table">
+            <tbody>
+              <tr><td>Release size</td><td>98 scenes, 161,315 frames</td></tr>
+              <tr><td>Typical length</td><td>about 1,646 frames per scene</td></tr>
+              <tr><td>Scene setup</td><td>each scene has more than 3 objects</td></tr>
+              <tr><td>&gt;3 in-frame objects</td><td>161,059 frames, 99.84%</td></tr>
+              <tr><td>exactly 3 in-frame objects</td><td>256 frames, 0.16%</td></tr>
+            </tbody>
+          </table>
+          <p>Exactly-3-object frames occur briefly when viewpoint motion moves objects out of frame; we retain them for continuity.</p>
+        </div>
+
+        <div class="glass-card rebuttal-summary-card">
+          <h3 class="card-title">P4. Robot Experiment</h3>
+          <p>To Reviewers W5GB, 5Exs, and TgfS, this is system-level manipulation, not a proxy for 6D pose accuracy. Parallel-jaw grasping is low-dimensional and error-tolerant, while LinkerHand needs affordance and grasp-type selection, high-dimensional joint mapping, and contact-rich closure.</p>
+          <p>Its lower success reflects grasp synthesis and control complexity, not only pose error.</p>
+        </div>
+
+        <div class="glass-card rebuttal-summary-card">
+          <h3 class="card-title">P5. Minor Revisions</h3>
+          <p>To Reviewers jqnR, 5Exs, and TgfS, we will fix captions, crop Fig. 1, enlarge figure and table fonts, and reformat tables.</p>
+          <p>We will clarify that 10 viewpoints are diagnostics while full trajectories are released, and 1,300-1,800 frames follows about 50s 30FPS capture with timing variation.</p>
         </div>
       </div>
     </div>
